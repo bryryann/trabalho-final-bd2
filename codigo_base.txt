@@ -1,0 +1,97 @@
+CREATE TABLE Usuario (
+    id_usuario INT PRIMARY KEY,  
+    email VARCHAR(50) NOT NULL,  
+    senha VARCHAR(50) NOT NULL,  
+    nome_usuario VARCHAR(50) NOT NULL,  
+    plano VARCHAR(20) NOT NULL DEFAULT 'Free',  
+    telefone VARCHAR(20)
+);
+
+CREATE TABLE Inventario ( 
+    id_inventario INT PRIMARY KEY,  
+    tamanho INT NOT NULL,  
+    peso INT NOT NULL  
+);
+
+CREATE TABLE Banimento ( 
+    id_banimento INT PRIMARY KEY,  
+    id_usuario INT,  
+    descricao VARCHAR NOT NULL,  
+    data_banimento DATE NOT NULL,  
+    data_desbanimento DATE NOT NULL,
+    FOREIGN KEY(id_usuario) REFERENCES Usuario (id_usuario)
+); 
+
+CREATE TABLE Player ( 
+    id_player INT PRIMARY KEY,
+    id_usuario INT,
+    id_inventario INT,
+    level_player INT,
+    nome_player VARCHAR NOT NULL,
+    experiencia INT,
+    kills INT,
+    faccao VARCHAR(20) NOT NULL,
+    deaths INT,
+    rublo INT,
+    dolar INT,
+    euro INT,
+    FOREIGN KEY(id_usuario) REFERENCES Usuario (id_usuario),
+    FOREIGN KEY(id_inventario) REFERENCES Inventario (id_inventario)
+ ); 
+ 
+
+
+CREATE TABLE Item ( 
+    id_item INT PRIMARY KEY,  
+    tamanho_item INT NOT NULL,  
+    classe_item VARCHAR NOT NULL,  
+    peso_item INT NOT NULL  
+); 
+
+CREATE TABLE Raid ( 
+    id_raid INT PRIMARY KEY,  
+    id_mapa INT,  
+    inicio_raid DATETIME NOT NULL,  
+    horario_raid TIME NOT NULL,  
+    status_raid VARCHAR NOT NULL DEFAULT 'EM ANDAMENTO',
+    FOREIGN KEY(id_mapa) REFERENCES Mapa (id_mapa)
+); 
+
+CREATE TABLE Mapa (
+    id_mapa INT PRIMARY KEY,  
+    nome_mapa VARCHAR NOT NULL,  
+    descricao_mapa VARCHAR,  
+    tamanho_mapa VARCHAR NOT NULL,  
+    duracao TIME,  
+    UNIQUE (duracao)
+); 
+
+CREATE TABLE Inventario-Raid ( 
+    id_inventario INT PRIMARY KEY,  
+    id_raid INT PRIMARY KEY,
+    FOREIGN KEY(id_inventario) REFERENCES Inventario (id_inventario),
+    FOREIGN KEY(id_raid) REFERENCES Raid (id_raid)
+); 
+
+CREATE TABLE Player-Raid ( 
+    id_player INT PRIMARY KEY,  
+    id_raid INT PRIMARY KEY,  
+    id_player_morto_por INT,  
+    status_player VARCHAR NOT NULL DEFAULT 'IN ACTION',  
+    scav BOOLEAN NOT NULL,  
+    dano_causado INT,
+    FOREIGN KEY(id_player) REFERENCES Player (id_player),
+    FOREIGN KEY(id_raid) REFERENCES Raid (id_raid)
+); 
+
+CREATE TABLE Instância_item (
+    id_instancia_item INT PRIMARY KEY,
+    id_item INT,  
+    id_inventario INT,  
+    in_raid BOOLEAN NOT NULL DEFAULT false,  
+    durabilidade FLOAT NOT NULL,  
+    in_container_seguro BOOLEAN NOT NULL DEFAULT false,  
+    quantidade INT NOT NULL,
+    FOREIGN KEY(id_item) REFERENCES Item (id_item),
+    FOREIGN KEY(id_inventario) REFERENCES Inventario (id_inventario)
+);
