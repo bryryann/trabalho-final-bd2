@@ -1,0 +1,23 @@
+==TRIGGERS==
+- Checar se não ultrapassa o limite de tamanho e peso;
+
+- Quando atualizar tabela Player-Raid, atualizar inventario;
+	- Assegurar que items no slot seguro permaneçam no inventario;
+	- SCAV-Players não perdem item do inventário nem possuem slot seguro;
+
+
+
+==PROCEDURE==
+- Atualiza dados após comprar um plano;
+	- Atualizar tamanho de inventario, e slot seguro;
+	- Mudar o status do plano no usuario;
+
+- Procedure para criar uma raid, selecionando um mapa de forma aleatória (ou pre-selecionada), ajustando também sua duraçao;
+	- Procedure para criar raids de forma automática. Sempre que uma raid terminar, deve criar outra (sempre deixando raids abertas);
+
+- Procedure para conectar um jogador em uma raid, checando o máximo de jogadores;
+
+- Procedure para criar tabelas essenciais após a criação do player (Inventário);
+
+==FUNCTION==
+- Para selecionar um mapa aleatório dentre os mapas disponíveis.
