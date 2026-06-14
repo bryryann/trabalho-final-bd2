@@ -152,9 +152,10 @@ CREATE TABLE Usuario (
 
 CREATE TABLE Inventario ( 
     id_inventario NUMBER PRIMARY KEY,
-    tamanho NUMBER,
+    tamanho_inventario_base NUMBER,
+    tamanho_inventario_player NUMBER,
     tamanho_slot_seguro NUMBER,
-    peso NUMBER
+    peso_max_player NUMBER
 );
 
 CREATE TABLE Player ( 
@@ -226,7 +227,7 @@ CREATE TABLE Instancia_item (
     id_instancia_item NUMBER PRIMARY KEY,
     id_item NUMBER,
     id_inventario NUMBER,
-    in_raid NUMBER(1),
+    equipado NUMBER(1),
     durabilidade NUMBER,
     in_container_seguro NUMBER(1),
     quantidade NUMBER,
