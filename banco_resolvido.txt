@@ -142,7 +142,7 @@ COMMIT;
 */
 
 CREATE TABLE Usuario ( 
-    id_usuario NUMBER PRIMARY KEY,  
+    id_usuario NUMBER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,  
     email VARCHAR2(50),  
     senha VARCHAR2(50),  
     nome_usuario VARCHAR2(50),  
@@ -151,7 +151,7 @@ CREATE TABLE Usuario (
 );
 
 CREATE TABLE Inventario ( 
-    id_inventario NUMBER PRIMARY KEY,
+    id_inventario NUMBER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     tamanho_inventario_base NUMBER,
     tamanho_inventario_player NUMBER,
     tamanho_slot_seguro NUMBER,
@@ -159,7 +159,7 @@ CREATE TABLE Inventario (
 );
 
 CREATE TABLE Player ( 
-    id_player NUMBER PRIMARY KEY,  
+    id_player NUMBER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,  
     id_usuario NUMBER,  
     id_inventario NUMBER,  
     level_player NUMBER,  
@@ -176,7 +176,7 @@ CREATE TABLE Player (
 ); 
 
 CREATE TABLE Item (
-    id_item NUMBER PRIMARY KEY,  
+    id_item NUMBER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,  
     nome_item VARCHAR2(50),
     tamanho_item NUMBER,  
     classe_item VARCHAR2(50),  
@@ -184,7 +184,7 @@ CREATE TABLE Item (
 );
 
 CREATE TABLE Mapa ( 
-    id_mapa NUMBER PRIMARY KEY,  
+    id_mapa NUMBER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,  
     nome_mapa VARCHAR2(50),  
     descricao_mapa VARCHAR2(200),  
     tamanho_mapa VARCHAR2(20),  
@@ -192,7 +192,7 @@ CREATE TABLE Mapa (
 );
 
 CREATE TABLE Raid (
-    id_raid NUMBER PRIMARY KEY,
+    id_raid NUMBER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     id_mapa NUMBER,
     inicio_raid TIMESTAMP,
     final_raid TIMESTAMP,
@@ -203,7 +203,7 @@ CREATE TABLE Raid (
 );
 
 CREATE TABLE Banimento ( 
-    id_banimento NUMBER PRIMARY KEY,  
+    id_banimento NUMBER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,  
     id_usuario NUMBER,  
     descricao VARCHAR2(50),  
     data_banimento DATE DEFAULT SYSDATE,  
@@ -212,7 +212,7 @@ CREATE TABLE Banimento (
 ); 
 
 CREATE TABLE Player_Raid ( 
-    id_player_raid NUMBER PRIMARY KEY,
+    id_player_raid NUMBER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     id_player NUMBER,  
     id_raid NUMBER,  
     id_morto_por NUMBER,  
@@ -224,7 +224,7 @@ CREATE TABLE Player_Raid (
 ); 
 
 CREATE TABLE Instancia_item ( 
-    id_instancia_item NUMBER PRIMARY KEY,
+    id_instancia_item NUMBER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     id_item NUMBER,
     id_inventario NUMBER,
     equipado NUMBER(1),

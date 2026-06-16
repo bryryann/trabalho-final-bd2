@@ -1,0 +1,79 @@
+-- FUNCTIONS =============================
+-- FUNCTION: Selecionar um mapa aleatorio dentre os mapas disponiveis
+-- Em caso de não haver nenhum mapa registrado no banco, é retornado NULL
+CREATE OR REPLACE FUNCTION fn_mapa_aleatorio
+RETURN NUMBER
+IS
+    v_id_mapa MAPA.id_mapa%TYPE;
+BEGIN
+    SELECT id_mapa
+    INTO v_id_mapa
+    FROM (
+        SELECT id_mapa
+        FROM Mapa
+        ORDER BY DBMS_RANDOM.VALUE
+    )
+    WHERE ROWNUM = 1;
+
+    RETURN v_id_mapa;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN NULL;
+END;
+
+-- TRIGGERS ===============================
+-- TRIGGER: Quando uma nova instancia_item é criada ou atualizada, é verificado
+-- se cabe no inventário do player. Caso não caiba, retorne
+-- uma EXCEPTION e de rollback na inserção/update.
+CREATE OR REPLACE TRIGGER trg_verifica_capacidade_inv
+BEFORE INSERT OR UPDATE ON Instancia_Item
+FOR EACH ROW
+DECLARE
+    v_tamanho_item Item.tamanho_item%TYPE;
+    v_peso_item Item.peso_item%TYPE;
+
+    v_tamanho_ocupado NUMBER;
+    v_peso_ocupado NUMBER;
+
+    v_tamanho_inventario_player Inventario.tamanho_inventario_player%TYPE;
+    v_peso_max_player Inventario.peso_max_player%TYPE;
+
+    v_tamanho_adicionado NUMBER;
+    v_peso_adicionado NUMBER;
+BEGIN
+    SELECT tamanho_item, peso_item
+    INTO v_tamanho_item, v_peso_item
+    FROM Item
+    WHERE id_item = :NEW.id_item; -- obtem tamanho e peso do item inserido
+
+    SELECT
+        NVL(SUM(it.tamanho_item * inst.quantidade), 0),
+        NVL(SUM(it.peso_item * inst.quantidade), 0)
+    INTO
+        v_tamanho_ocupado, v_peso_ocupado
+    FROM Instancia_Item inst
+        JOIN Item it ON it.id_item = inst.id_item
+    WHERE inst.id_inventario = :NEW.id_inventario; -- obtem o tamanho e o peso dos items ja no inventario
+
+    SELECT tamanho_inventario_player, peso_max_player
+    INTO v_tamanho_inventario_player, v_peso_max_player
+    FROM Inventario
+    WHERE id_inventario = :NEW.id_inventario; -- maximos do inventario
+
+    v_tamanho_adicionado := v_tamanho_item * :NEW.quantidade;
+    v_peso_adicionado := v_peso_item * :NEW.quantidade;
+
+    IF v_tamanho_ocupado + v_tamanho_adicionado > v_tamanho_inventario_player THEN
+        RAISE_APPLICATION_ERROR(
+            -20001,
+            'Espaço insuficiente no inventário.'
+        );
+    ELSIF v_peso_ocupado + v_peso_adicionado > v_peso_max_player THEN
+        RAISE_APPLICATION_ERROR(
+            -20002,
+            'Peso máximo do inventario excedido.'
+        );
+    END IF;
+
+END;
