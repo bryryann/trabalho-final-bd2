@@ -95,7 +95,7 @@ BEGIN
     SELECT * INTO rec_player FROM PLAYER PLA WHERE PLA.id_player = id_player;
         
         --Caso esteja jogando com o principal
-        IF scav = 0 THEN
+        IF :NEW.scav = 0 THEN
             --Pega o id do inventario do player, para a exclusao
             SELECT id_inventario INTO v_id_inventario FROM INVENTARIO INV 
                 WHERE INV.id_player = id_player;
@@ -107,7 +107,7 @@ BEGIN
             DELETE FROM INSTANCIA_ITEM WHERE id_inventario = v_id_inventario AND equipado = 1 AND in_container_seguro = 0;
             
         --Caso esteja de scav
-        ELSIF scav = 1 THEN
+        ELSIF :NEW.scav = 1 THEN
             --Atualiza o total de mortes
             UPDATE PLAYER PLA SET DEATHS = (rec_player.deaths+1) WHERE PLA.id_player = id_player;
         END IF;
