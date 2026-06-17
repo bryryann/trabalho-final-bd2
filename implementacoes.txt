@@ -81,7 +81,7 @@ BEGIN
 END;
 
 
-CREATE OR REPLACE TRIGGER trg_verifica_player_raid
+create or replace TRIGGER trg_verifica_player_raid
 BEFORE UPDATE ON PLAYER_RAID
 FOR EACH ROW
 DECLARE
@@ -90,29 +90,27 @@ DECLARE
 BEGIN
 
     IF :NEW.status_player = 'KIA' OR :NEW.status_player = 'MIA' THEN
-    
+
     --FICAR DE OLHO SE FUNCIONA
     SELECT * INTO rec_player FROM PLAYER PLA WHERE PLA.id_player = id_player;
-        
+    UPDATE PLAYER PLA SET DEATHS = (rec_player.deaths+1) WHERE PLA.id_player = id_player;
         --Caso esteja jogando com o principal
         IF :NEW.scav = 0 THEN
             --Pega o id do inventario do player, para a exclusao
             SELECT id_inventario INTO v_id_inventario FROM INVENTARIO INV 
                 WHERE INV.id_player = id_player;
-            
-            --Atualiza o total de mortes
-            UPDATE PLAYER PLA SET DEATHS = (rec_player.deaths+1) WHERE PLA.id_player = id_player;
-            
+
             --Deleta os itens equipados
             DELETE FROM INSTANCIA_ITEM WHERE id_inventario = v_id_inventario AND equipado = 1 AND in_container_seguro = 0;
-            
+
         --Caso esteja de scav
         ELSIF :NEW.scav = 1 THEN
             --Atualiza o total de mortes
-            UPDATE PLAYER PLA SET DEATHS = (rec_player.deaths+1) WHERE PLA.id_player = id_player;
+            
         END IF;
     END IF;
-
+    
+    COMMIT;
 END;
 
 
@@ -157,6 +155,8 @@ BEGIN
         );
     END IF;
 END;
+
+
 
 -- PROCEDURE: Finalizar partida
 CREATE OR REPLACE PROCEDURE sp_terminar_raid (
@@ -203,8 +203,52 @@ BEGIN
 
     EXCEPTION
         WHEN v_raid_existe THEN
-	    RAISE_APPLICATION_ERROR(-20001, "Raid não encontrada");
+	    RAISE_APPLICATION_ERROR(-20001, 'Raid não encontrada');
 
 	WHEN OTHERS THEN
-            RAIS_APPLICATION_ERROR(-20002, "Erro ao finalizar Raid");
+            RAISE_APPLICATION_ERROR(-20002, 'Erro ao finalizar Raid');
+END;
+
+
+--Checa a quantidade de players na partida antes de inserir outro player
+create or replace TRIGGER trg_verifica_quant_players_raid
+BEFORE INSERT ON PLAYER_RAID
+FOR EACH ROW
+DECLARE
+    v_quant_players NUMBER := 0;
+    v_disponibilidade EXCEPTION;
+BEGIN
+
+    SELECT COUNT(*) INTO v_quant_players FROM PLAYER_RAID PLARAD WHERE PLARAD.id_raid = :NEW.id_raid;
+    
+    IF v_quant_players >= 16 THEN
+        RAISE v_disponibilidade;
+    END IF;
+    
+    EXCEPTION
+       WHEN v_disponibilidade THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Raid sem espaço para players');
+            
+        WHEN OTHERS THEN
+            RAISE_APPLICATION_ERROR(-20002, 'Erro ao inserir player');
+END;
+
+
+--procedure para inserir o jogador na raid
+CREATE OR REPLACE PROCEDURE SP_ENTRAR_PLAYER_RAID(p_id_player NUMBER, p_id_raid NUMBER, p_scav NUMBER) IS
+BEGIN
+    INSERT INTO PLAYER_RAID(id_player, id_raid, scav)
+        VALUES(p_id_player, p_id_raid, p_scav);
+        
+    COMMIT;
+END;
+
+
+--procedure para criar uma raid
+CREATE OR REPLACE PROCEDURE SP_CRIAR_RAID(p_id_mapa NUMBER, p_horario_raid VARCHAR2) IS
+BEGIN
+    INSERT INTO RAID(id_mapa, inicio_raid, final_raid, horario_raid)
+        VALUES(p_id_mapa, TO_CHAR(SYSDATE, 'DD/MM/YYYY - HH24:MI:SS'), TO_CHAR(SYSDATE+30/1440, 'DD/MM/YYYY - HH24:MI:SS'), p_horario_raid);
+        
+    COMMIT;
 END;
