@@ -172,7 +172,18 @@ CREATE OR REPLACE PROCEDURE sp_terminar_raid (
 
     v_player_rec c_player%ROWTYPE;
 
+    v_raid_encontrada NUMBER;
+    v_raid_existe EXCEPTION;
 BEGIN
+    SELECT COUNT(*) 
+    INTO v_raid_encontrada 
+    FROM Raid WHERE id_raid = p_id_raid;
+    
+
+    if v_raid_encontrada = 0 THEN
+        RAISE v_raid_existe;
+    END IF;
+
     OPEN c_player;
     FETCH c_player INTO v_player_rec;
     WHILE (c_player%FOUND) LOOP
@@ -189,4 +200,11 @@ BEGIN
         AND id_raid = p_id_raid;
 
     COMMIT;
+
+    EXCEPTION
+        WHEN v_raid_existe THEN
+	    RAISE_APPLICATION_ERROR(-20001, "Raid não encontrada");
+
+	WHEN OTHERS THEN
+            RAIS_APPLICATION_ERROR(-20002, "Erro ao finalizar Raid");
 END;
