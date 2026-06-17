@@ -22,6 +22,8 @@ EXCEPTION
         RETURN NULL;
 END;
 
+
+
 -- TRIGGERS ===============================
 -- TRIGGER: Quando uma nova instancia_item é criada ou atualizada, é verificado
 -- se cabe no inventário do player. Caso não caiba, retorne
@@ -76,4 +78,82 @@ BEGIN
         );
     END IF;
 
+END;
+
+
+CREATE OR REPLACE TRIGGER trg_verifica_player_raid
+BEFORE UPDATE ON PLAYER_RAID
+FOR EACH ROW
+DECLARE
+    v_id_inventario NUMBER;
+    rec_player PLAYER%ROWTYPE;
+BEGIN
+
+    IF :NEW.status_player = 'KIA' OR :NEW.status_player = 'MIA' THEN
+    
+    --FICAR DE OLHO SE FUNCIONA
+    SELECT * INTO rec_player FROM PLAYER PLA WHERE PLA.id_player = id_player;
+        
+        --Caso esteja jogando com o principal
+        IF scav = 0 THEN
+            --Pega o id do inventario do player, para a exclusao
+            SELECT id_inventario INTO v_id_inventario FROM INVENTARIO INV 
+                WHERE INV.id_player = id_player;
+            
+            --Atualiza o total de mortes
+            UPDATE PLAYER PLA SET DEATHS = (rec_player.deaths+1) WHERE PLA.id_player = id_player;
+            
+            --Deleta os itens equipados
+            DELETE FROM INSTANCIA_ITEM WHERE id_inventario = v_id_inventario AND equipado = 1 AND in_container_seguro = 0;
+            
+        --Caso esteja de scav
+        ELSIF scav = 1 THEN
+            --Atualiza o total de mortes
+            UPDATE PLAYER PLA SET DEATHS = (rec_player.deaths+1) WHERE PLA.id_player = id_player;
+        END IF;
+    END IF;
+
+END;
+
+
+
+-- PROCEDURES ===============================
+-- 
+create or replace PROCEDURE SP_CRIAR_PLAYER(p_id_usuario NUMBER, p_nome_player VARCHAR2, p_faccao VARCHAR2) IS
+    v_cont NUMBER;
+    v_id_player NUMBER;
+    v_plano VARCHAR2(50);
+BEGIN
+    SELECT plano INTO v_plano FROM USUARIO WHERE id_usuario = p_id_usuario;
+    --Checa se nao ha outro player nessa conta
+    SELECT COUNT(*) INTO v_cont FROM PLAYER WHERE Player.id_usuario = p_id_usuario;
+    --Verifica se nao ha outra conta e se o usuario possui o jogo pago
+    IF v_cont = 0 AND v_plano != 'FREE' THEN
+    
+        --PADRAO
+        IF v_plano = 'STANDARD' THEN
+            INSERT INTO PLAYER(id_usuario, nome_player, faccao, rublo, dolar, euro) 
+                VALUES(p_id_usuario, p_nome_player, p_faccao, 50000, 2500, 3000);
+                
+            SELECT id_player INTO v_id_player FROM PLAYER WHERE id_usuario = p_id_usuario;
+            
+            INSERT INTO INVENTARIO(id_player, tamanho_inventario_base, tamanho_inventario_player, tamanho_slot_seguro, peso_max_player) 
+                VALUES (v_id_player, 300, 80, 4, 75);
+                
+        --PREMIUM
+        ELSIF v_plano = 'PREMIUM' THEN
+            INSERT INTO PLAYER(id_usuario, nome_player, faccao, rublo, dolar, euro) 
+                VALUES(p_id_usuario, p_nome_player, p_faccao, 500000, 25000, 30000);
+                
+            SELECT id_player INTO v_id_player FROM PLAYER WHERE id_usuario = p_id_usuario;
+        
+            INSERT INTO INVENTARIO(id_player, tamanho_inventario_base, tamanho_inventario_player, tamanho_slot_seguro, peso_max_player) 
+                VALUES (v_id_player, 720, 80, 9, 75);
+        END IF;
+    ELSE
+        RAISE_APPLICATION_ERROR(
+            -20003,
+            'Usuario possui um plano inválido ou já possui conta vinculada.'
+        );
+    END IF;
 END;
