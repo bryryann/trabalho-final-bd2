@@ -53,9 +53,9 @@ CREATE TABLE Mapa (
 CREATE TABLE Raid (
     id_raid NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_mapa NUMBER,
-    inicio_raid TIMESTAMP,
-    final_raid TIMESTAMP,
-    horario_raid TIMESTAMP,
+    inicio_raid VARCHAR2(50),
+    final_raid VARCHAR2(50),
+    horario_raid VARCHAR2(20),
     status_raid VARCHAR2(50) DEFAULT 'RUNNING',
     limite_players NUMBER DEFAULT 16,
     CONSTRAINT fk_raid_mapa FOREIGN KEY (id_mapa) REFERENCES Mapa(id_mapa)
@@ -78,6 +78,7 @@ CREATE TABLE Player_Raid (
     status_player VARCHAR2(10) DEFAULT 'IN ACTION',  
     scav NUMBER(1) DEFAULT 0,
     dano_causado NUMBER DEFAULT 0,
+    kills NUMBER DEFAULT 0,
     CONSTRAINT fk_playerraid_player FOREIGN KEY (id_player) REFERENCES Player(id_player),
     CONSTRAINT fk_playerraid_raid FOREIGN KEY (id_raid) REFERENCES Raid(id_raid)
 ); 
