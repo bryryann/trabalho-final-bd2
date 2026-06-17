@@ -157,3 +157,36 @@ BEGIN
         );
     END IF;
 END;
+
+-- PROCEDURE: Finalizar partida
+CREATE OR REPLACE PROCEDURE sp_terminar_raid (
+    p_id_raid Raid.id_raid%TYPE
+) IS
+    CURSOR c_player IS
+        SELECT 
+            pr.id_player_raid, 
+            pr.id_raid
+        FROM Player_Raid pr
+            JOIN Raid r ON pr.id_raid = r.id_raid
+        WHERE pr.status_player = 'IN ACTION';
+
+    v_player_rec c_player%ROWTYPE;
+
+BEGIN
+    OPEN c_player;
+    FETCH c_player INTO v_player_rec;
+    WHILE (c_player%FOUND) LOOP
+        UPDATE Player_Raid
+        SET status_player = 'MIA'
+        WHERE status_player = 'IN ACTION' 
+            AND id_player_raid = v_player_rec.id_player_raid
+            AND id_raid = v_player_rec.id_raid;
+    END LOOP;
+
+    UPDATE Raid
+    SET status_raid = 'FINISHED'
+    WHERE status_raid = 'RUNNING' 
+        AND id_raid = p_id_raid;
+
+    COMMIT;
+END;
