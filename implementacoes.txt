@@ -116,11 +116,11 @@ END;
 
 
 -- PROCEDURES ===============================
--- 
 create or replace PROCEDURE SP_CRIAR_PLAYER(p_id_usuario NUMBER, p_nome_player VARCHAR2, p_faccao VARCHAR2) IS
     v_cont NUMBER;
     v_id_player NUMBER;
     v_plano VARCHAR2(50);
+    v_erro EXCEPTION;
 BEGIN
     SELECT plano INTO v_plano FROM USUARIO WHERE id_usuario = p_id_usuario;
     --Checa se nao ha outro player nessa conta
@@ -148,12 +148,19 @@ BEGIN
             INSERT INTO INVENTARIO(id_player, tamanho_inventario_base, tamanho_inventario_player, tamanho_slot_seguro, peso_max_player) 
                 VALUES (v_id_player, 720, 80, 9, 75);
         END IF;
+        
+        COMMIT;
+        
     ELSE
-        RAISE_APPLICATION_ERROR(
-            -20003,
-            'Usuario possui um plano inválido ou já possui conta vinculada.'
-        );
+        RAISE v_erro;
     END IF;
+
+EXCEPTION
+    WHEN v_erro THEN
+        RAISE_APPLICATION_ERROR(-20003, 'Usuario possui um plano inválido ou já possui conta vinculada.');
+        
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Erro ao criar a conta do player.');
 END;
 
 
@@ -225,12 +232,12 @@ BEGIN
         RAISE v_disponibilidade;
     END IF;
     
-    EXCEPTION
-       WHEN v_disponibilidade THEN
-            RAISE_APPLICATION_ERROR(-20001, 'Raid sem espaço para players');
-            
-        WHEN OTHERS THEN
-            RAISE_APPLICATION_ERROR(-20002, 'Erro ao inserir player');
+EXCEPTION
+   WHEN v_disponibilidade THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Raid sem espaço para players');
+        
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao inserir player');
 END;
 
 

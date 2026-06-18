@@ -1,0 +1,68 @@
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('AK-74N', 6, 'Arma', 3.5);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('M4A1', 6, 'Arma', 3.2);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Munição 5.45x39 BP', 1, 'Municao', 0.012);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Munição 5.56 M855A1', 1, 'Municao', 0.012);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Salewa', 2, 'Medicamento', 0.9);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('CMS Kit', 2, 'Medicamento', 0.5);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Golden Star Balm', 1, 'Medicamento', 0.1);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Slick Armor', 9, 'Armadura', 8.5);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Altyn Helmet', 4, 'Capacete', 4.0);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Document Case', 4, 'Container', 0.7);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Bitcoin', 1, 'Valioso', 0.2);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('GPU', 2, 'Valioso', 0.8);
+COMMIT;
+
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (1, 1, 1, 1, 0, 1);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (3, 1, 1, NULL, 0, 60);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (5, 1, 1, NULL, 0, 4);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (11, 1, 0, NULL, 0, 1);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (12, 1, 1, NULL, 1, 1);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (12, 1, 0, NULL, 0, 1);
+
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (1, 2, 1, 1, 0, 1);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (3, 2, 1, NULL, 0, 60);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (5, 2, 1, NULL, 0, 4);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (11, 2, 0, NULL, 0, 1);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (12, 2, 1, NULL, 1, 1);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (12, 2, 0, NULL, 0, 1);
+
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (1, 3, 1, 1, 0, 1);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (3, 3, 1, NULL, 0, 60);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (5, 3, 1, NULL, 0, 4);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (11, 3, 0, NULL, 0, 1);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (12, 3, 1, NULL, 1, 1);
+INSERT INTO Instancia_Item (id_item, id_inventario, equipado, durabilidade, in_container_seguro, quantidade) VALUES (12, 3, 0, NULL, 0, 1);
+
+COMMIT;
+
+SELECT * FROM USUARIO;
+SELECT * FROM PLAYER;
+SELECT * FROM INVENTARIO;
+SELECT * FROM INSTANCIA_ITEM;
+SELECT * FROM ITEM;
+SELECT * FROM RAID;
+SELECT * FROM PLAYER_RAID;
+SELECT * FROM MAPA;
+
+EXEC SP_CRIAR_PLAYER(2, 'ANINHA', 'USEC');
+EXEC SP_CRIAR_PLAYER(3, 'BRUNIM_SAFADIM', 'BEAR');
+EXEC SP_CRIAR_PLAYER(5, 'LucasLucas', 'USEC');
+EXEC SP_CRIAR_PLAYER(6, 'Julinha da Balinha', 'BEAR');
+EXEC SP_CRIAR_PLAYER(8, 'Camila2', 'USEC');
+EXEC SP_CRIAR_PLAYER(9, 'RafaelDoPneu', 'BEAR');
+EXEC SP_CRIAR_PLAYER(11, 'RelampagoMarquinhos', 'USEC');
+EXEC SP_CRIAR_PLAYER(12, 'Leticia', 'BEAR');
+
+EXEC SP_CRIAR_RAID(1, '11:59:02');
+EXEC SP_CRIAR_RAID(4, '21:38:22');
+
+EXEC SP_ENTRAR_PLAYER_RAID(1, 21, 0);
+EXEC SP_ENTRAR_PLAYER_RAID(2, 21, 0);
+EXEC SP_ENTRAR_PLAYER_RAID(3, 21, 1);
+
+SELECT * FROM INSTANCIA_ITEM WHERE id_inventario = 3;
+
+UPDATE PLAYER_RAID SET STATUS_PLAYER = 'KIA' WHERE id_player = 3 AND id_raid = 21;
+UPDATE PLAYER_RAID SET STATUS_PLAYER = 'EXTRACTED' WHERE id_player = 2 AND id_raid = 21;
+
+EXEC SP_TERMINAR_RAID(21);

@@ -53,18 +53,19 @@ VALUES ('leticia.ribeiro@email.com', 'let951', 'LeticiaRib', 'PREMIUM', '3198765
 -- ITENS
 -- =========================
 
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (1, 'AK-74N', 6, 'Arma', 3.5);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (2, 'M4A1', 6, 'Arma', 3.2);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (3, 'Munição 5.45x39 BP', 1, 'Municao', 0.012);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (4, 'Munição 5.56 M855A1', 1, 'Municao', 0.012);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (5, 'Salewa', 2, 'Medicamento', 0.9);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (6, 'CMS Kit', 2, 'Medicamento', 0.5);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (7, 'Golden Star Balm', 1, 'Medicamento', 0.1);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (8, 'Slick Armor', 9, 'Armadura', 8.5);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (9, 'Altyn Helmet', 4, 'Capacete', 4.0);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (10, 'Document Case', 4, 'Container', 0.7);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (11, 'Bitcoin', 1, 'Valioso', 0.2);
-INSERT INTO Item (id_item, nome_item, tamanho_item, classe_item, peso_item) VALUES (12, 'GPU', 2, 'Valioso', 0.8);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('AK-74N', 6, 'Arma', 3.5);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('M4A1', 6, 'Arma', 3.2);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Munição 5.45x39 BP', 1, 'Municao', 0.012);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Munição 5.56 M855A1', 1, 'Municao', 0.012);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Salewa', 2, 'Medicamento', 0.9);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('CMS Kit', 2, 'Medicamento', 0.5);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Golden Star Balm', 1, 'Medicamento', 0.1);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Slick Armor', 9, 'Armadura', 8.5);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Altyn Helmet', 4, 'Capacete', 4.0);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Document Case', 4, 'Container', 0.7);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('Bitcoin', 1, 'Valioso', 0.2);
+INSERT INTO Item (nome_item, tamanho_item, classe_item, peso_item) VALUES ('GPU', 2, 'Valioso', 0.8);
+COMMIT;
 
 -- =========================
 -- MAPAS
