@@ -77,7 +77,63 @@ BEGIN
             'Peso máximo do inventario excedido.'
         );
     END IF;
+END;
 
+--Checa a quantidade de players na partida antes de inserir outro player
+CREATE OR REPLACE TRIGGER trg_verifica_quant_players_raid
+BEFORE INSERT ON PLAYER_RAID
+FOR EACH ROW
+DECLARE
+    v_quant_players NUMBER := 0;
+    v_disponibilidade EXCEPTION;
+BEGIN
+
+    SELECT COUNT(*) INTO v_quant_players FROM PLAYER_RAID PLARAD WHERE PLARAD.id_raid = :NEW.id_raid;
+    
+    IF v_quant_players >= 16 THEN
+        RAISE v_disponibilidade;
+    END IF;
+    
+EXCEPTION
+   WHEN v_disponibilidade THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Raid sem espaço para players');
+        
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Erro ao inserir player');
+END;
+
+
+-- TRIGGER PARA VERIFICAR SE UM PLAYER ESTÁ BANIDO ANTES DE ENTRAR EM UMA RAID
+-- a trigger é executada automaticamente antes da inserção de um registro
+-- na tabela Player_Raid.
+--     * se o jogador possuir um banimento ativo, o INSERT é cancelado.
+--     * é lançada a exceção ORA-20001 com uma mensagem informativa.
+-- critérios para considerar um banimento ativo:
+--     * data_desbanimento IS NULL (banimento permanente), ou
+--     * data_desbanimento > SYSDATE (banimento ainda vigente).
+-- uso: executada automaticamente quando um registro é inserido em Player_Raid.
+CREATE OR REPLACE TRIGGER trg_verifica_banimento
+BEFORE INSERT ON Player_Raid
+FOR EACH ROW
+DECLARE
+    v_player_banido NUMBER;
+BEGIN
+    SELECT COUNT(*)
+    INTO v_player_banido
+    FROM Banimento
+    WHERE id_usuario = (
+        SELECT p.id_usuario
+        FROM Player p
+        WHERE id_player = :NEW.id_player
+    )
+    AND (data_desbanimento IS NULL OR data_desbanimento > SYSDATE);
+
+    IF v_player_banido > 0 THEN
+        RAISE_APPLICATION_ERROR(
+            -20001,
+            'Jogador está banido e não pode entrar em uma raid.'
+        );
+    END IF;
 END;
 
 -- PROCEDURES ===============================
@@ -181,31 +237,6 @@ BEGIN
             RAISE_APPLICATION_ERROR(-20002, 'Erro ao finalizar Raid');
 END;
 
-
---Checa a quantidade de players na partida antes de inserir outro player
-create or replace TRIGGER trg_verifica_quant_players_raid
-BEFORE INSERT ON PLAYER_RAID
-FOR EACH ROW
-DECLARE
-    v_quant_players NUMBER := 0;
-    v_disponibilidade EXCEPTION;
-BEGIN
-
-    SELECT COUNT(*) INTO v_quant_players FROM PLAYER_RAID PLARAD WHERE PLARAD.id_raid = :NEW.id_raid;
-    
-    IF v_quant_players >= 16 THEN
-        RAISE v_disponibilidade;
-    END IF;
-    
-EXCEPTION
-   WHEN v_disponibilidade THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Raid sem espaço para players');
-        
-    WHEN OTHERS THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Erro ao inserir player');
-END;
-
-
 --procedure para inserir o jogador na raid
 CREATE OR REPLACE PROCEDURE SP_ENTRAR_PLAYER_RAID(p_id_player NUMBER, p_id_raid NUMBER, p_scav NUMBER) IS
 BEGIN
@@ -222,5 +253,60 @@ BEGIN
     INSERT INTO RAID(id_mapa, inicio_raid, final_raid, horario_raid)
         VALUES(p_id_mapa, TO_CHAR(SYSDATE, 'DD/MM/YYYY - HH24:MI:SS'), TO_CHAR(SYSDATE+30/1440, 'DD/MM/YYYY - HH24:MI:SS'), p_horario_raid);
         
+    COMMIT;
+END;
+
+-- Essa procedure irá processar os dados do player quando o status do player for alterado ('MIA', 'KIA', etc.)
+-- A procedure deve ser usada APENAS quando:
+--         * a partida acabar e o player ainda estiver em campo (MIA),
+--         * quando o player for morto (KIA), ou
+--         * quando a extração for bem sucedida. (SURVIVED);
+-- O jogo ficará encarregado de programar a lógica para executar essa procedure.
+-- Uso: sp_finalizar_raid(id_player, id_raid, status_novo_do_player)
+CREATE OR REPLACE PROCEDURE sp_processa_status_player(
+    p_id_player Player.id_player%TYPE,
+    p_id_raid   Raid.id_raid%TYPE,
+    p_status    Player_Raid.status_player%TYPE
+)
+IS
+    v_scav Player_Raid.scav%TYPE;
+BEGIN
+    UPDATE Player_Raid
+    SET status_player = p_status
+    WHERE id_player = p_id_player
+        AND id_raid = p_id_raid;
+
+    SELECT scav
+    INTO v_scav
+    FROM Player_Raid
+    WHERE id_player = p_id_player
+        AND id_raid = p_id_raid;
+
+    UPDATE Player p
+    SET kills = kills + (
+        SELECT pr.kills
+        FROM Player_Raid pr
+        WHERE pr.id_player = p_id_player
+            AND pr.id_raid = p_id_raid
+    )
+    WHERE id_player = p_id_player;
+
+    IF p_status IN ('KIA', 'MIA') THEN
+        UPDATE Player
+        SET deaths = deaths + 1
+        WHERE id_player = p_id_player;
+
+        IF v_scav = 0 THEN
+            DELETE FROM Instancia_Item
+            WHERE id_inventario = (
+                SELECT id_inventario
+                FROM Inventario
+                WHERE id_player = p_id_player
+            )
+            AND equipado = 1
+            AND in_container_seguro = 0;
+        END IF;
+    END IF;
+
     COMMIT;
 END;
