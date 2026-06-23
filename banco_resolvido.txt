@@ -15,14 +15,15 @@ CREATE TABLE Player (
     level_player NUMBER DEFAULT 0,  
     nome_player VARCHAR2(50),  
     experiencia NUMBER DEFAULT 0,  
-    kills NUMBER DEFAULT 0,  
+    kills NUMBER DEFAULT 0,
+    deaths NUMBER DEFAULT 0,
+    kill_death_ratio NUMBER DEFAULT 0,
     faccao VARCHAR2(10),  
-    deaths NUMBER DEFAULT 0,  
     rublo NUMBER,
     dolar NUMBER,  
     euro NUMBER,
     CONSTRAINT fk_player_usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
-); 
+);
 
 CREATE TABLE Inventario ( 
     id_inventario NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -39,7 +40,8 @@ CREATE TABLE Item (
     nome_item VARCHAR2(50),
     tamanho_item NUMBER,  
     classe_item VARCHAR2(50),  
-    peso_item NUMBER
+    peso_item NUMBER,
+    valor_item NUMBER
 );
 
 CREATE TABLE Mapa ( 
