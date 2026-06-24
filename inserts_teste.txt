@@ -72,27 +72,27 @@ COMMIT;
 -- =========================
 
 INSERT INTO Mapa VALUES
-(1, 'Customs',
+('Customs',
  'Área industrial com dormitórios e armazéns.',
  'Grande', 40);
 
 INSERT INTO Mapa VALUES
-(2, 'Factory',
+('Factory',
  'Complexo industrial fechado para combates rápidos.',
  'Pequeno', 20);
 
 INSERT INTO Mapa VALUES
-(3, 'Interchange',
+('Interchange',
  'Shopping center abandonado.',
  'Grande', 45);
 
 INSERT INTO Mapa VALUES
-(4, 'Woods',
+('Woods',
  'Região florestal com bases militares.',
  'Muito Grande', 50);
 
 INSERT INTO Mapa VALUES
-(5, 'Reserve',
+('Reserve',
  'Base militar subterrânea.',
  'Grande', 50);
 
