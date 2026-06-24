@@ -71,27 +71,27 @@ COMMIT;
 -- MAPAS
 -- =========================
 
-INSERT INTO Mapa VALUES
+INSERT INTO Mapa(nome_mapa, descricao_mapa, tamanho_mapa, duracao) VALUES
 ('Customs',
  'Área industrial com dormitórios e armazéns.',
  'Grande', 40);
 
-INSERT INTO Mapa VALUES
+INSERT INTO Mapa(nome_mapa, descricao_mapa, tamanho_mapa, duracao) VALUES
 ('Factory',
  'Complexo industrial fechado para combates rápidos.',
  'Pequeno', 20);
 
-INSERT INTO Mapa VALUES
+INSERT INTO Mapa(nome_mapa, descricao_mapa, tamanho_mapa, duracao) VALUES
 ('Interchange',
  'Shopping center abandonado.',
  'Grande', 45);
 
-INSERT INTO Mapa VALUES
+INSERT INTO Mapa(nome_mapa, descricao_mapa, tamanho_mapa, duracao) VALUES
 ('Woods',
  'Região florestal com bases militares.',
  'Muito Grande', 50);
 
-INSERT INTO Mapa VALUES
+INSERT INTO Mapa(nome_mapa, descricao_mapa, tamanho_mapa, duracao) VALUES
 ('Reserve',
  'Base militar subterrânea.',
  'Grande', 50);
