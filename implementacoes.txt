@@ -79,6 +79,8 @@ BEGIN
     END IF;
 END;
 
+
+
 --Checa a quantidade de players na partida antes de inserir outro player
 CREATE OR REPLACE TRIGGER trg_verifica_quant_players_raid
 BEFORE INSERT ON PLAYER_RAID
@@ -135,6 +137,8 @@ BEGIN
         );
     END IF;
 END;
+
+
 
 -- PROCEDURES ===============================
 create or replace PROCEDURE SP_CRIAR_PLAYER(p_id_usuario NUMBER, p_nome_player VARCHAR2, p_faccao VARCHAR2) IS
@@ -237,6 +241,8 @@ BEGIN
             RAISE_APPLICATION_ERROR(-20002, 'Erro ao finalizar Raid');
 END;
 
+
+
 --procedure para inserir o jogador na raid
 CREATE OR REPLACE PROCEDURE SP_ENTRAR_PLAYER_RAID(p_id_player NUMBER, p_id_raid NUMBER, p_scav NUMBER) IS
 BEGIN
@@ -247,6 +253,7 @@ BEGIN
 END;
 
 
+
 --procedure para criar uma raid
 CREATE OR REPLACE PROCEDURE SP_CRIAR_RAID(p_id_mapa NUMBER, p_horario_raid VARCHAR2) IS
 BEGIN
@@ -255,6 +262,8 @@ BEGIN
         
     COMMIT;
 END;
+
+
 
 -- Essa procedure irá processar os dados do player quando o status do player for alterado ('MIA', 'KIA', etc.)
 -- A procedure deve ser usada APENAS quando:
@@ -309,4 +318,106 @@ BEGIN
     END IF;
 
     COMMIT;
+END;
+
+
+
+--function para registrar o K/D do jogador
+CREATE OR REPLACE FUNCTION FN_CALCULAR_KD(p_id_player NUMBER) RETURN NUMBER IS
+    v_ratio NUMBER;
+    v_kills NUMBER;
+    v_deaths NUMBER;
+    v_error EXCEPTION;
+BEGIN
+
+    SELECT kills, deaths INTO v_kills, v_deaths FROM PLAYER WHERE id_player = p_id_player;
+
+    IF v_kills IS NULL AND v_deaths IS NULL THEN
+        RAISE v_error;
+    
+    ELSE
+        v_ratio := v_kills/v_deaths;
+        UPDATE PLAYER SET kill_death_ratio = ROUND(v_ratio, 2) WHERE id_player = p_id_player;
+        COMMIT;
+        RETURN v_ratio;
+    END IF;
+
+EXCEPTION
+
+    WHEN v_error THEN
+        RAISE_APPLICATION_ERROR(-20001, 'VALORES NÃO ENCONTRADOS');
+        
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20002, 'ERRO AO CALCULAR A TAXA DE K/D');
+
+END;
+
+
+
+--function para transformar itens em dinheiro
+CREATE OR REPLACE FUNCTION FN_CONVERTER_ITEM_PLAYER_RUBLO(p_id_player NUMBER, p_id_item NUMBER, p_quantidade NUMBER) RETURN NUMBER IS
+    v_total NUMBER;
+    v_item_valor NUMBER;
+BEGIN
+    SELECT valor_item INTO v_item_valor FROM ITEM WHERE id_item = p_id_item;
+    
+    v_total := (p_quantidade*v_item_valor);
+    
+    UPDATE PLAYER SET rublo = (rublo+v_total) WHERE id_player = p_id_player;
+    COMMIT;
+    RETURN v_total;
+END;
+
+
+
+--function para calcular o espaço livre do estoque
+create or replace FUNCTION ESPACO_LIVRE_ESTOQUE(p_id_inventario NUMBER) RETURN NUMBER IS
+    v_espaco_estoque NUMBER;
+    v_espaco_ocupado NUMBER;
+BEGIN
+
+    SELECT tamanho_inventario_base INTO v_espaco_estoque FROM INVENTARIO WHERE id_inventario = p_id_inventario;
+
+    SELECT NVL(SUM(II.quantidade * I.tamanho_item), 0) INTO v_espaco_ocupado 
+        FROM INSTANCIA_ITEM II 
+        INNER JOIN ITEM I ON II.id_item = I.id_item 
+        WHERE II.id_inventario = p_id_inventario;
+
+    RETURN (v_espaco_estoque - v_espaco_ocupado);
+END;
+
+
+--Checa o espaço livre no inventário da base (Precisa dar uma mexida e implementar junto do espaço do inventário do jogador)
+CREATE OR REPLACE TRIGGER CHECAR_INVENTARIO_DISPONIVEL
+BEFORE INSERT ON INSTANCIA_ITEM
+FOR EACH ROW
+DECLARE 
+    v_espaco_livre NUMBER;
+    v_espaco_ocupado_item NUMBER;
+    v_id_player NUMBER;
+    v_valor_convertido NUMBER;
+    v_error EXCEPTION;
+    PRAGMA AUTONOMOUS_TRANSACTION;
+BEGIN
+    
+    v_espaco_livre := ESPACO_LIVRE_ESTOQUE(:NEW.id_inventario);
+    
+    SELECT tamanho_item INTO v_espaco_ocupado_item FROM ITEM WHERE id_item = :NEW.id_item;
+    
+    v_espaco_ocupado_item := v_espaco_ocupado_item * :NEW.quantidade;
+    
+    --Não há espaço para inserir o item no inventário
+    IF v_espaco_ocupado_item > v_espaco_livre THEN
+        RAISE v_error;
+    END IF;
+EXCEPTION
+
+    WHEN v_error THEN
+        SELECT id_player INTO v_id_player FROM INVENTARIO WHERE id_inventario = :NEW.id_inventario;
+        v_valor_convertido := FN_CONVERTER_ITEM_PLAYER_RUBLO(v_id_player, :NEW.id_item, :NEW.quantidade);
+        RAISE_APPLICATION_ERROR(
+            -20001,
+            'Capacidade máxima excedida. Transformando em rublo.'
+        );
+    
 END;
