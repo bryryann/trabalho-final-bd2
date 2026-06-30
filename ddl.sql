@@ -1,0 +1,104 @@
+CREATE TABLE Usuario (
+    id_usuario NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    email VARCHAR2(50),
+    senha VARCHAR2(50),
+    nome_usuario VARCHAR2(50),
+    plano VARCHAR2(50) DEFAULT 'FREE',
+    telefone VARCHAR2(20)
+);
+/
+
+CREATE TABLE Player (
+    id_player NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_usuario NUMBER,
+    level_player NUMBER DEFAULT 0,
+    nome_player VARCHAR2(50),
+    experiencia NUMBER DEFAULT 0,
+    kills NUMBER DEFAULT 0,
+    deaths NUMBER DEFAULT 0,
+    kill_death_ratio NUMBER DEFAULT 0,
+    faccao VARCHAR2(10),
+    rublo NUMBER,
+    dolar NUMBER,
+    euro NUMBER,
+    CONSTRAINT fk_player_usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
+);
+/
+
+CREATE TABLE Inventario (
+    id_inventario NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_player NUMBER,
+    tamanho_inventario_base NUMBER,
+    tamanho_inventario_player NUMBER,
+    tamanho_slot_seguro NUMBER,
+    peso_max_player NUMBER,
+    CONSTRAINT fk_id_player FOREIGN KEY (id_player) REFERENCES Player(id_player)
+);
+/
+
+CREATE TABLE Item (
+    id_item NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nome_item VARCHAR2(50),
+    tamanho_item NUMBER,
+    classe_item VARCHAR2(50),
+    peso_item NUMBER,
+    valor_item NUMBER
+);
+/
+
+CREATE TABLE Mapa (
+    id_mapa NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nome_mapa VARCHAR2(50),
+    descricao_mapa VARCHAR2(200),
+    tamanho_mapa VARCHAR2(20),
+    duracao NUMBER
+);
+/
+
+CREATE TABLE Raid (
+    id_raid NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_mapa NUMBER,
+    inicio_raid VARCHAR2(50),
+    final_raid VARCHAR2(50),
+    horario_raid VARCHAR2(20),
+    status_raid VARCHAR2(50) DEFAULT 'RUNNING',
+    limite_players NUMBER DEFAULT 16,
+    CONSTRAINT fk_raid_mapa FOREIGN KEY (id_mapa) REFERENCES Mapa(id_mapa)
+);
+/
+
+CREATE TABLE Banimento (
+    id_banimento NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_usuario NUMBER,
+    descricao VARCHAR2(50),
+    data_banimento DATE DEFAULT SYSDATE,
+    data_desbanimento DATE,
+    CONSTRAINT fk_banimento_usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
+);
+/
+
+CREATE TABLE Player_Raid (
+    id_player_raid NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_player NUMBER,
+    id_raid NUMBER,
+    id_morto_por NUMBER,
+    status_player VARCHAR2(10) DEFAULT 'IN ACTION',
+    scav NUMBER(1) DEFAULT 0,
+    dano_causado NUMBER DEFAULT 0,
+    kills NUMBER DEFAULT 0,
+    CONSTRAINT fk_playerraid_player FOREIGN KEY (id_player) REFERENCES Player(id_player),
+    CONSTRAINT fk_playerraid_raid FOREIGN KEY (id_raid) REFERENCES Raid(id_raid)
+);
+/
+
+CREATE TABLE Instancia_item (
+    id_instancia_item NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_item NUMBER,
+    id_inventario NUMBER,
+    equipado NUMBER(1),
+    durabilidade NUMBER,
+    in_container_seguro NUMBER(1),
+    quantidade NUMBER,
+    CONSTRAINT fk_instancia_item FOREIGN KEY (id_item) REFERENCES Item(id_item),
+    CONSTRAINT fk_instancia_inv FOREIGN KEY (id_inventario) REFERENCES Inventario(id_inventario)
+);
